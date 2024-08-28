@@ -3,16 +3,16 @@
 set -euo pipefail
 
 install_php_from_brew() {
-    local formula="shivammathur/php/php@${ASDF_INSTALL_VERSION}"
-    local keg=$(brew --prefix $formula)
-    brew tap shivammathur/php
-    echo ">> Installing formula ${formula}"
-    brew install $formula
-    echo ">> Linking with keg ${keg}"
-    stat "${keg}"
-    ln -s "${keg}/bin" "${ASDF_INSTALL_PATH}/bin"
-    ln -s "${keg}/sbin" "${ASDF_INSTALL_PATH}/sbin"
-    echo ">> Done"
+  local formula="shivammathur/php/php@${ASDF_INSTALL_VERSION}"
+  local keg=$(brew --prefix $formula)
+  brew tap shivammathur/php
+  echo ">> Installing formula ${formula}"
+  brew install $formula
+  echo ">> Linking with keg ${keg}"
+  stat "${keg}"
+  ln -s "${keg}/bin" "${ASDF_INSTALL_PATH}/bin"
+  ln -s "${keg}/sbin" "${ASDF_INSTALL_PATH}/sbin"
+  echo ">> Done"
 }
 
 install_php_from_brew

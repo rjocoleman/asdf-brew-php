@@ -3,8 +3,8 @@
 set -euo pipefail
 
 uninstall_php() {
-    local formula="shivammathur/php/php@${ASDF_INSTALL_VERSION}"
-    echo ">> Uninstalling formula ${formula}"
-    brew remove ${formula}
-    echo ">> Uninstalled formula ${formula}"
+  local formula="shivammathur/php/php@${ASDF_INSTALL_VERSION}"
+  echo ">> Uninstalling formula ${formula}"
+  brew remove ${formula}
+  echo ">> Uninstalled formula ${formula}"
 }
