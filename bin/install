@@ -1,18 +1,57 @@
 #!/usr/bin/env bash
-
 set -euo pipefail
 
+brew tap shivammathur/php
+brew tap shivammathur/extensions
+
+get_major_minor_version() {
+  echo "$1" | sed -E 's/^([0-9]+\.[0-9]+).*/\1/'
+}
+
 install_php_from_brew() {
-  local formula="shivammathur/php/php@${ASDF_INSTALL_VERSION}"
-  local keg=$(brew --prefix $formula)
-  brew tap shivammathur/php
-  echo ">> Installing formula ${formula}"
-  brew install $formula
-  echo ">> Linking with keg ${keg}"
-  stat "${keg}"
-  ln -s "${keg}/bin" "${ASDF_INSTALL_PATH}/bin"
-  ln -s "${keg}/sbin" "${ASDF_INSTALL_PATH}/sbin"
-  echo ">> Done"
+  local version_major_minor
+  version_major_minor=$(get_major_minor_version "${ASDF_INSTALL_VERSION}")
+  local formula="shivammathur/php/php@${version_major_minor}"
+  local keg
+  keg=$(brew --prefix "${formula}")
+  echo ">> Installing PHP ${version_major_minor}"
+  brew install -q "${formula}"
+  echo ">> Linking PHP installation"
+  ln -sf "${keg}/bin" "${ASDF_INSTALL_PATH}/bin"
+  ln -sf "${keg}/sbin" "${ASDF_INSTALL_PATH}/sbin"
+  echo ">> PHP ${version_major_minor} installed successfully"
+}
+
+install_composer_from_brew() {
+  echo ">> Installing Composer"
+  brew install -q composer
+  echo ">> Linking Composer installation"
+  ln -sf "$(brew --prefix composer)/bin/composer" "${ASDF_INSTALL_PATH}/bin/composer"
+  echo ">> Composer installed successfully"
+}
+
+install_default_extensions() {
+  local default_extensions="${ASDF_PHP_DEFAULT_EXTENSIONS_FILE:=$HOME/.default-php-extensions}"
+  local version_major_minor
+  version_major_minor=$(get_major_minor_version "${ASDF_INSTALL_VERSION}")
+  if [ ! -f "$default_extensions" ]; then
+    echo ">> No default extensions file found at $default_extensions"
+    return
+  fi
+  echo ">> Installing default PHP extensions for PHP $version_major_minor"
+  while IFS=" " read -r -a line; do
+    # Skip empty lines and comments
+    [ "${#line[@]}" -gt 0 ] || continue
+    [ "${line[0]:0:1}" != "#" ] || continue
+    extension_name="${line[0]}"
+    formula="shivammathur/extensions/${extension_name}@${version_major_minor}"
+    echo -n "Installing extension: $extension_name ... "
+    brew install "${formula}"
+  done <"$default_extensions"
 }
 
 install_php_from_brew
+install_composer_from_brew
+install_default_extensions
+
+echo ">> Installation process completed"

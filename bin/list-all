@@ -2,19 +2,36 @@
 
 set -euo pipefail
 
-brew tap shivammathur/php
+brew tap shivammathur/php &>/dev/null
 
 sort_versions() {
   sed 'h; s/[+-]/./g; s/.p\([[:digit:]]\)/.z\1/; s/$/.z/; G; s/\n/ /' |
     LC_ALL=C sort -t. -k 1,1 -k 2,2n -k 3,3n -k 4,4n -k 5,5n | awk '{print $2}'
 }
 
-versions=$(
-  brew info --json shivammathur/php/php |
-    jq -r '.[].versioned_formulae[]' |
-    cut -f2 -d'@' |
-    sort_versions |
-    xargs
-)
+list_versions() {
+  brew tap-info --json shivammathur/php |
+    jq -r '.[].formula_names[] | select(startswith("shivammathur/php/php@"))' |
+    sed 's/.*@//'
+}
 
-echo "$versions"
+group_versions() {
+  local versions="$1"
+  local suffixes=("" "-debug" "-zts" "-debug-zts")
+  local grouped_versions=""
+
+  for suffix in "${suffixes[@]}"; do
+    local filtered_versions
+    filtered_versions=$(echo "$versions" | tr ' ' '\n' | grep -E "${suffix}$" | tr '\n' ' ')
+    grouped_versions="${grouped_versions}${filtered_versions}"
+  done
+
+  echo "$grouped_versions"
+}
+
+# List all versions, sort them, and group by suffix
+versions=$(list_versions | sort_versions | xargs)
+grouped_versions=$(group_versions "$versions")
+
+# Print space-separated list of grouped versions
+echo "$grouped_versions"

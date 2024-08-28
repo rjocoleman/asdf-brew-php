@@ -2,9 +2,18 @@
 
 set -euo pipefail
 
+get_major_minor_version() {
+  echo "$1" | sed -E 's/^([0-9]+\.[0-9]+).*/\1/'
+}
+
 uninstall_php() {
-  local formula="shivammathur/php/php@${ASDF_INSTALL_VERSION}"
+  local version_major_minor
+  version_major_minor=$(get_major_minor_version "${ASDF_INSTALL_VERSION}")
+  local formula="shivammathur/php/php@${version_major_minor}"
+
   echo ">> Uninstalling formula ${formula}"
-  brew remove ${formula}
+  brew remove "${formula}"
   echo ">> Uninstalled formula ${formula}"
 }
+
+uninstall_php
